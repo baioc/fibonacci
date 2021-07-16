@@ -1,0 +1,29 @@
+#! /usr/bin/env racket
+#lang r7rs
+
+(import (scheme base) (scheme write))
+(import (scheme process-context))
+
+;; Fast fibonacci through successive squaring of polynomials mod (X^2 - X - 1).
+(define (fibonacci n)
+  (define (fast-fib p q n a b)
+    (cond ((<= n 0) b)
+          ((even? n)
+           (let ((q2 (* q q)))
+             (fast-fib (+ q2 (* p p))
+                       (+ q2 (* 2 p q))
+                       (/ n 2) a b)))
+          (else
+           (fast-fib p q (- n 1)
+                     (+ (* a (+ q p)) (* b q))
+                     (+ (* a q) (* b p))))))
+
+  (let ((fn (fast-fib 0 1 (abs n) 1 0)))
+    (if (and (negative? n) (even? n))
+        (- fn)
+        fn)))
+
+(display
+  (fibonacci
+    (string->number (list-ref (command-line) 1))))
+(newline)
